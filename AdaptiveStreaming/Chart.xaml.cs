@@ -26,9 +26,5 @@ namespace AdaptiveStreaming
             InitializeComponent();
             DataContext = new Simulation();
         }
-
-        private void Odswiez_Click(object sender, RoutedEventArgs e)
-        {
-        }
     }
 }

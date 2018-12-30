@@ -13,11 +13,8 @@
             <RowDefinition Height="25" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        
+
         <Menu x:Name="menu" VerticalAlignment="Stretch" Height="25">
-            <MenuItem Header="Plik">
-                <MenuItem Header="Odśwież" Click="Odswiez_Click"></MenuItem>
-            </MenuItem>
             <MenuItem Header="Symulacja">
                 <MenuItem Header="Uruchom" Command="{Binding ReadCommand}"></MenuItem>
             </MenuItem>
