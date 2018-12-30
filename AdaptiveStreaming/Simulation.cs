@@ -14,6 +14,7 @@ namespace AdaptiveStreaming
     {
         private double simulationClock;
         private readonly double simulationLength;
+        private double previousTick;
         private double downloadStartTime;
 
         private readonly Player genericPlayer;
@@ -30,10 +31,7 @@ namespace AdaptiveStreaming
         private readonly double minimumBitRate;
         private readonly double maximumBitRate;
 
-        private double QueQuality
-        {
-            get => ComputeSegmentQA();
-        }
+        private double segmentQuality;
 
         private readonly Random rnd;
 
@@ -46,6 +44,7 @@ namespace AdaptiveStreaming
         {
             simulationClock          = 0.0;
             simulationLength         = _simulationLength;
+            previousTick             = 0.0;
             downloadStartTime        = 0.0;
 
             genericPlayer            = new Player();
@@ -64,7 +63,7 @@ namespace AdaptiveStreaming
             rnd                      = new Random();
         }
 
-        public Simulation() : this(300.0)
+        public Simulation() : this(150.0)
         {
             SeriesCollection = new SeriesCollection
             {
@@ -107,22 +106,25 @@ namespace AdaptiveStreaming
                     currentEvent = eventsQueue.First();
                     eventsQueue.Remove(eventsQueue.First());
 
+                    previousTick = simulationClock;
                     simulationClock = currentEvent.Time;
 
                     currentEvent.Handler();
                     eventsQueue.Sort(); //Sort by time
+
+                    genericPlayer.RenderBackBuffer(simulationClock, previousTick);
 
                     PopulateChartData();
                 }
             });
         }
 
-        private double ComputeSegmentQA()
+        private double GetSegmentQA()
         {
             double bufferWNewSegment = genericPlayer.GenericBuffer.Size + Segment.Length;
-            if (bitRate > 0 && bufferWNewSegment - (Segment.Quality.FHD / bitRate) >= genericPlayer.GenericBuffer.SizeLowerBound)
+            if (bitRate > 0 && bufferWNewSegment - (Segment.Quality.FHD / bitRate) >= genericPlayer.GenericBuffer.HysteresisLowerBound)
                 return Segment.Quality.FHD;
-            else if (bitRate > 0 && bufferWNewSegment - (Segment.Quality.HD / bitRate) >= genericPlayer.GenericBuffer.SizeLowerBound)
+            else if (bitRate > 0 && bufferWNewSegment - (Segment.Quality.HD / bitRate) >= genericPlayer.GenericBuffer.HysteresisLowerBound)
                 return Segment.Quality.HD;
             else
                 return Segment.Quality.SD;
@@ -130,21 +132,18 @@ namespace AdaptiveStreaming
 
         private void BeginGettingSegment()
         {
+            segmentQuality = GetSegmentQA();
             if(! isDownloadActive)
-                downloadingSegment = new Segment(QueQuality, genericPlayer.GenericBuffer.GetLastSegmentIndex() + 1);
+                downloadingSegment = new Segment(segmentQuality, genericPlayer.GenericBuffer.GetLastSegmentIndex() + 1);
 
             double nextTime = (bitRate > 0) ?
                 simulationClock + (downloadingSegment.Size / bitRate) :
                 Double.PositiveInfinity;
             eventsQueue.Add(new Event(nextTime, EndGettingSegment));
 
-            genericPlayer.RenderBackBuffer(simulationClock - downloadStartTime);
-
-            SeriesCollection[1].Values.Add(new ObservablePoint(simulationClock, genericPlayer.GenericBuffer.Size));
+            isDownloadActive = true;
 
             downloadStartTime = simulationClock;
-
-            isDownloadActive = true;
         }
 
         private void EndGettingSegment()
@@ -152,8 +151,8 @@ namespace AdaptiveStreaming
             genericPlayer.GenericBuffer.AddSegment(downloadingSegment);
 
             double delay = 0.0;
-            if (genericPlayer.GenericBuffer.Size > genericPlayer.GenericBuffer.SizeUpperBound)
-                delay = genericPlayer.GenericBuffer.Size - genericPlayer.GenericBuffer.SizeUpperBound;
+            if (genericPlayer.GenericBuffer.GetDistanceToSupremum() > 0)
+                delay = genericPlayer.GenericBuffer.GetDistanceToSupremum();
 
             double nextTime = simulationClock + delay;
             eventsQueue.Add(new Event(nextTime, BeginGettingSegment));
@@ -180,7 +179,8 @@ namespace AdaptiveStreaming
         private void PopulateChartData()
         {
             SeriesCollection[0].Values.Add(new ObservablePoint(simulationClock, bitRate));
-            SeriesCollection[2].Values.Add(new ObservablePoint(simulationClock, QueQuality));
+            SeriesCollection[1].Values.Add(new ObservablePoint(simulationClock, genericPlayer.GenericBuffer.Size));
+            SeriesCollection[2].Values.Add(new ObservablePoint(simulationClock, segmentQuality));
         }
     }
 }

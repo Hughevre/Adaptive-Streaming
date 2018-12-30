@@ -10,17 +10,19 @@ namespace AdaptiveStreaming
     {
         public double SizeUpperBound { get; }
         public double Size { get; set; }
-        public double SizeLowerBound { get; }
+        public double HysteresisLowerBound { get; }
+        public double HysteresisUpperBound { get; }
 
         private readonly List<Segment> cachedSegments;
 
         public ulong GetLastSegmentIndex() => cachedSegments.Count > 0 ? cachedSegments.Last().Index : 0;
 
-        public Buffer(double sizeUpperBound = 30.0, double sizeLowerBound = 10.0)
+        public Buffer(double sizeUpperBound = 30.0)
         {
             SizeUpperBound          = sizeUpperBound;
             Size                    = 0.0;
-            SizeLowerBound          = sizeLowerBound;
+            HysteresisLowerBound    = 10.0;
+            HysteresisUpperBound    = 20.0;
 
             cachedSegments          = new List<Segment>();
         }
@@ -29,8 +31,10 @@ namespace AdaptiveStreaming
         {
             cachedSegments.Add(segment);
             cachedSegments.Sort();
+
+            Size += Segment.Length;
         }
 
-        public Segment GetFirstSegment() => cachedSegments.FirstOrDefault();
+        public double GetDistanceToSupremum() => Size - SizeUpperBound;
     }
 }
