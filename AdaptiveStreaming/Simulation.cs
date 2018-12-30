@@ -57,7 +57,7 @@ namespace AdaptiveStreaming
 
             lambda                   = 0.15;
 
-            minimumBitRate           = 1.0;
+            minimumBitRate           = 10.0;
             maximumBitRate           = 0.0;
 
             rnd                      = new Random();

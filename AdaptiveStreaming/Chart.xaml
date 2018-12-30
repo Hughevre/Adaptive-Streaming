@@ -58,12 +58,12 @@
             <Border x:Name="Border1" Grid.RowSpan="2" CornerRadius="5" Background="White" Margin="0,0,0,0" />
             <Border Background="#CE2156" Margin="0,0,0,0" Grid.RowSpan="3" />
 
-            <lvc:CartesianChart Series="{Binding SeriesCollection}" LegendLocation="Top" Margin="0,0,10,20"  Hoverable="False" Grid.RowSpan="2">
+            <lvc:CartesianChart Series="{Binding SeriesCollection}" LegendLocation="Top" Margin="0,0,10,20"  Hoverable="False" Grid.RowSpan="2" DataTooltip="{x:Null}">
                 <lvc:CartesianChart.AxisY>
                     <lvc:Axis LabelFormatter="{Binding YFormatter}" MinValue="0"></lvc:Axis>
                 </lvc:CartesianChart.AxisY>
                 <lvc:CartesianChart.AxisX>
-                    <lvc:Axis Title="Time" Labels="{Binding Labels}"></lvc:Axis>
+                    <lvc:Axis Title="Time" ShowLabels="False"></lvc:Axis>
                 </lvc:CartesianChart.AxisX>
             </lvc:CartesianChart>
         </Grid>
