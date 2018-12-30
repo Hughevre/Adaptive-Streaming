@@ -18,11 +18,11 @@ namespace AdaptiveStreaming
 
         public Buffer(double sizeUpperBound = 30.0, double sizeLowerBound = 10.0)
         {
-            SizeUpperBound  = sizeUpperBound;
-            Size            = 0.0;
-            SizeLowerBound  = sizeLowerBound;
+            SizeUpperBound          = sizeUpperBound;
+            Size                    = 0.0;
+            SizeLowerBound          = sizeLowerBound;
 
-            cachedSegments = new List<Segment>();
+            cachedSegments          = new List<Segment>();
         }
 
         public void AddSegment(Segment segment)

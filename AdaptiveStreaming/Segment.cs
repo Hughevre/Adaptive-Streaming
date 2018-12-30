@@ -8,8 +8,8 @@ namespace AdaptiveStreaming
 {
     class Segment : IComparable
     {
-        public static double Length { get; } = 2.0;//In s
-        public double Size { get; } //In MB/s
+        public static double Length { get; } = 2.0; //In s
+        public double Size { get; set; } //In MB
         public ulong Index { get; }
 
         public Segment(double size, ulong index)
@@ -23,7 +23,6 @@ namespace AdaptiveStreaming
             public const double SD  = 2.0;
             public const double HD  = 4.0;
             public const double FHD = 10.0;
-            public const double QHD = 35.0; //For future development
         }
 
         #region IComparable Implementation

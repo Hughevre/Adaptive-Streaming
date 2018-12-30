@@ -10,15 +10,9 @@ namespace AdaptiveStreaming
     {
         public Buffer GenericBuffer { get; }
 
-        //public double PlayingTime { get; private set; }
-
         public Segment RenderingSegment { get; private set; }
 
-        public Player()
-        {
-            GenericBuffer = new Buffer();
-            //PlayingTime = 0.0;
-        }
+        public Player() => GenericBuffer = new Buffer();
 
         public void RenderBackBuffer(double elapsedTime)
         {

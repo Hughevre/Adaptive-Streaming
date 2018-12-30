@@ -14,7 +14,7 @@ namespace AdaptiveStreaming
     {
         private double simulationClock;
         private readonly double simulationLength;
-        private double previousSegmentTimeStamp;
+        private double downloadStartTime;
 
         private readonly Player genericPlayer;
 
@@ -23,11 +23,17 @@ namespace AdaptiveStreaming
         private readonly List<Event> eventsQueue;
 
         private Segment downloadingSegment;
+        private bool isDownloadActive;
 
         private readonly double lambda;
 
         private readonly double minimumBitRate;
         private readonly double maximumBitRate;
+
+        private double QueQuality
+        {
+            get => ComputeSegmentQA();
+        }
 
         private readonly Random rnd;
 
@@ -40,7 +46,7 @@ namespace AdaptiveStreaming
         {
             simulationClock          = 0.0;
             simulationLength         = _simulationLength;
-            previousSegmentTimeStamp = 0.0;
+            downloadStartTime        = 0.0;
 
             genericPlayer            = new Player();
 
@@ -48,10 +54,12 @@ namespace AdaptiveStreaming
 
             eventsQueue              = new List<Event>();
 
-            lambda                   = 0.25;
+            isDownloadActive         = false;
+
+            lambda                   = 0.15;
 
             minimumBitRate           = 10.0;
-            maximumBitRate           = 0.5;
+            maximumBitRate           = 0.0;
 
             rnd                      = new Random();
         }
@@ -72,15 +80,22 @@ namespace AdaptiveStreaming
                     Title  = "Buffer length",
                     Values = new ChartValues<ObservablePoint>(),
                     Stroke = System.Windows.Media.Brushes.Lime
+                },
+
+                new LineSeries
+                {
+                    Title  = "Segment quality",
+                    Values = new ChartValues<ObservablePoint>(),
+                    Stroke = System.Windows.Media.Brushes.Indigo
                 }
             };
 
             YFormatter = value => value.ToString("");
 
-            ReadCommand = new RelayCommand<object>(Simulate);
+            ReadCommand = new RelayCommand<object>(_ => Simulate());
         }
 
-        public void Simulate(object arg)
+        public void Simulate()
         {
             Task.Run(() =>
             {
@@ -96,6 +111,8 @@ namespace AdaptiveStreaming
 
                     currentEvent.Handler();
                     eventsQueue.Sort(); //Sort by time
+
+                    PopulateChartData();
                 }
             });
         }
@@ -113,17 +130,21 @@ namespace AdaptiveStreaming
 
         private void BeginGettingSegment()
         {
-            downloadingSegment = new Segment(ComputeSegmentQA(), genericPlayer.GenericBuffer.GetLastSegmentIndex() + 1);
+            if(! isDownloadActive)
+                downloadingSegment = new Segment(QueQuality, genericPlayer.GenericBuffer.GetLastSegmentIndex() + 1);
+
             double nextTime = (bitRate > 0) ?
                 simulationClock + (downloadingSegment.Size / bitRate) :
                 Double.PositiveInfinity;
             eventsQueue.Add(new Event(nextTime, EndGettingSegment));
 
-            genericPlayer.RenderBackBuffer(simulationClock - previousSegmentTimeStamp);
+            genericPlayer.RenderBackBuffer(simulationClock - downloadStartTime);
 
             SeriesCollection[1].Values.Add(new ObservablePoint(simulationClock, genericPlayer.GenericBuffer.Size));
 
-            previousSegmentTimeStamp = simulationClock;
+            downloadStartTime = simulationClock;
+
+            isDownloadActive = true;
         }
 
         private void EndGettingSegment()
@@ -136,18 +157,30 @@ namespace AdaptiveStreaming
 
             double nextTime = simulationClock + delay;
             eventsQueue.Add(new Event(nextTime, BeginGettingSegment));
+
+            isDownloadActive = false;
         }
 
         private void ChangeBitRate()
         {
+            if (isDownloadActive)
+            {
+                downloadingSegment.Size -= (bitRate * (simulationClock - downloadStartTime));
 
+                eventsQueue.RemoveAll(bash => bash.Handler == EndGettingSegment);
+                eventsQueue.Add(new Event(simulationClock, BeginGettingSegment));
+            }
+            bitRate = (rnd.NextDouble() * (maximumBitRate - minimumBitRate)) + minimumBitRate;
 
-            bitRate = rnd.NextDouble() * (maximumBitRate - minimumBitRate) + minimumBitRate;
             eventsQueue.Add(new Event(simulationClock + GenerateExpDistribiution(), ChangeBitRate));
-
-            SeriesCollection[0].Values.Add(new ObservablePoint(simulationClock, bitRate));
         }
 
         private double GenerateExpDistribiution() => (-1 / lambda) * Math.Log(rnd.NextDouble());
+
+        private void PopulateChartData()
+        {
+            SeriesCollection[0].Values.Add(new ObservablePoint(simulationClock, bitRate));
+            SeriesCollection[2].Values.Add(new ObservablePoint(simulationClock, QueQuality));
+        }
     }
 }
