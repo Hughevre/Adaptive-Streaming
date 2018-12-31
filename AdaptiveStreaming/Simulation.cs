@@ -112,6 +112,7 @@ namespace AdaptiveStreaming
         private double GetNextSegmentRate()
         {
             //Adaptive bit rate selection algorithm: BBA-0
+            //http://yuba.stanford.edu/~nickm/papers/sigcomm2014-video.pdf
             double rateMinus, ratePlus;
             if (downloadingSegment.Rate == VideoRate.FindMaxRateWhere(_ => true))
                 ratePlus = VideoRate.FindMaxRateWhere(_ => true);
