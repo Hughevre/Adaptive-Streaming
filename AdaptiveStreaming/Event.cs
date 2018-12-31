@@ -25,7 +25,7 @@ namespace AdaptiveStreaming
 
             Event otherEvent = obj as Event;
             if (otherEvent != null)
-                return this.Time.CompareTo(otherEvent.Time);
+                return Time.CompareTo(otherEvent.Time);
             else
                 throw new ArgumentException("Object is not a Event");
         }

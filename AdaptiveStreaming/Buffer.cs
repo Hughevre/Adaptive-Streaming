@@ -8,33 +8,28 @@ namespace AdaptiveStreaming
 {
     class Buffer
     {
-        public double SizeUpperBound { get; }
-        public double Size { get; set; }
-        public double HysteresisLowerBound { get; }
-        public double HysteresisUpperBound { get; }
+        public const double sizeUpperBound  = 30.0;
+        public const double sizeLowerBound  = 0.0;
+        public const double reservoir       = 5.0;
+        public const double cushion         = 20.0;
 
-        private readonly List<Segment> cachedSegments;
+        public double Occupancy { get; set; }
 
-        public ulong GetLastSegmentIndex() => cachedSegments.Count > 0 ? cachedSegments.Last().Index : 0;
+        private readonly List<Segment> bufferedChunks = new List<Segment>();
 
-        public Buffer(double sizeUpperBound = 30.0)
+        public void AddChunk(Segment chunk)
         {
-            SizeUpperBound          = sizeUpperBound;
-            Size                    = 0.0;
-            HysteresisLowerBound    = 10.0;
-            HysteresisUpperBound    = 20.0;
+            bufferedChunks.Add(chunk);
+            bufferedChunks.Sort();
 
-            cachedSegments          = new List<Segment>();
+            Occupancy += Segment.length;
         }
 
-        public void AddSegment(Segment segment)
+        public void RemoveFirstChunk()
         {
-            cachedSegments.Add(segment);
-            cachedSegments.Sort();
-
-            Size += Segment.Length;
+            var itemToRemove = bufferedChunks.First();
+            if (itemToRemove != null)
+                bufferedChunks.Remove(itemToRemove);
         }
-
-        public double GetDistanceToSupremum() => Size - SizeUpperBound;
     }
 }

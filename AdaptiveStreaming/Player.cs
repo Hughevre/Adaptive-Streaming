@@ -9,27 +9,26 @@ namespace AdaptiveStreaming
 {
     class Player
     {
-        public Buffer GenericBuffer { get; }
-        private double playingTime;
+        public Buffer GenericBuffer { get; } = new Buffer();
+        private double lastRenderTime;
 
-        private static Logger logger = LogManager.GetCurrentClassLogger();
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
 
-        public Player()
+        public void RenderBuffer(double currentClock)
         {
-            GenericBuffer = new Buffer();
-            playingTime = 0.0;
-        }
-
-        public void RenderBackBuffer(double currentTime, double previousTime)
-        {
-            double nextBufferSize = GenericBuffer.Size - (currentTime - previousTime);
+            double nextBufferSize = GenericBuffer.Occupancy - (currentClock - lastRenderTime);
 
             if (nextBufferSize >= 0)
-                playingTime += (currentTime - previousTime);
+            {
+                GenericBuffer.Occupancy = nextBufferSize;
+            }
             else
-                logger.Info("Buffering at: {0}", currentTime);
+            {
+                GenericBuffer.Occupancy = 0.0;
+                logger.Info("Buffering at: {0}", currentClock);
+            }
 
-            GenericBuffer.Size = nextBufferSize > 0.0 ? nextBufferSize : 0.0;
+            lastRenderTime = currentClock;
         }
     }
 }

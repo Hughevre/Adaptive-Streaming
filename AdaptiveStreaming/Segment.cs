@@ -8,21 +8,16 @@ namespace AdaptiveStreaming
 {
     class Segment : IComparable
     {
-        public static double Length { get; } = 2.0; //In s
-        public double Size { get; set; } //In MB
+        public const double length = 2.0; //In s
+        public double Rate { get; } //In MB
         public ulong Index { get; }
+        public double SizeToDownload { get; set; }
 
-        public Segment(double size, ulong index)
+        public Segment(double rate, ulong index)
         {
-            Size = size;
-            Index = index;
-        }
-
-        public struct Quality
-        {
-            public const double SD  = 2.0;
-            public const double HD  = 4.0;
-            public const double FHD = 10.0;
+            Rate            = rate;
+            Index           = index;
+            SizeToDownload  = rate;
         }
 
         #region IComparable Implementation
@@ -32,9 +27,9 @@ namespace AdaptiveStreaming
                 return 1;
 
             if (obj is Segment otherSegment)
-                return this.Index.CompareTo(otherSegment.Index);
+                return Index.CompareTo(otherSegment.Index);
             else
-                throw new ArgumentException("Object is not a Event");
+                throw new ArgumentException("Object is not a Segment");
         }
         #endregion
     }
