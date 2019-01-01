@@ -27,7 +27,7 @@ namespace AdaptiveStreaming
 
         private const double lambda                 = 0.5;
         private const double minimumBitRate         = 0.0;
-        private const double maximumBitRate         = 5.0;
+        private const double maximumBitRate         = 6.0;
 
         private readonly Random rnd                 = new Random();
 

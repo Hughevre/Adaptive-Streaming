@@ -10,8 +10,8 @@ namespace AdaptiveStreaming
     {
         public const double sizeUpperBound  = 30.0;
         public const double sizeLowerBound  = 0.0;
-        public const double reservoir       = 5.0;
-        public const double cushion         = 20.0;
+        public const double reservoir       = 11.0;
+        public const double cushion         = 16.0;
 
         public double Occupancy { get; set; }
 
