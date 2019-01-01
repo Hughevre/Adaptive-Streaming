@@ -10,10 +10,14 @@ namespace AdaptiveStreaming
     {
         private static readonly Dictionary<string, double> rates = new Dictionary<string, double>
         {
-            {"SD",  2.0 },
-            {"HD",  6.0 },
-            {"FHD", 10.0 }
-            //{"QHD", 20.0 }
+            {"IIS-1", 0.35 },
+            {"IIS-2", 0.47 },
+            {"IIS-3", 0.63 },
+            {"IIS-4", 0.85 },
+            {"IIS-5", 1.13 },
+            {"IIS-6", 1.52 },
+            {"IIS-7", 2.04 },
+            {"IIS-8", 2.75 }
         };
 
         public static double FindMinRateWhere(Func<double, bool> predicate) =>

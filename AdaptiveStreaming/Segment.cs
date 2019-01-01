@@ -9,15 +9,15 @@ namespace AdaptiveStreaming
     class Segment : IComparable
     {
         public const double length = 2.0; //In s
-        public double Rate { get; } //In MB
+        public double Rate { get; } //In MB/s
         public ulong Index { get; }
-        public double SizeToDownload { get; set; }
+        public double SizeToDownload { get; set; } //MB
 
         public Segment(double rate, ulong index)
         {
             Rate            = rate;
             Index           = index;
-            SizeToDownload  = rate;
+            SizeToDownload  = rate * length;
         }
 
         #region IComparable Implementation

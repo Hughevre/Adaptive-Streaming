@@ -18,16 +18,16 @@ namespace AdaptiveStreaming
 
         private readonly Player genericPlayer       = new Player();
 
-        private double bitRate                      = 5.0;
+        private double bitRate                      = 2.0;
 
         private readonly List<Event> eventsQueue    = new List<Event>();
 
         private Segment downloadingSegment;
         private bool isDownloading;
 
-        private const double lambda                 = 0.25;
+        private const double lambda                 = 0.5;
         private const double minimumBitRate         = 0.0;
-        private const double maximumBitRate         = 10.0;
+        private const double maximumBitRate         = 5.0;
 
         private readonly Random rnd                 = new Random();
 
@@ -113,6 +113,7 @@ namespace AdaptiveStreaming
         {
             //Adaptive bit rate selection algorithm: BBA-0
             //http://yuba.stanford.edu/~nickm/papers/sigcomm2014-video.pdf
+            //https://docs.microsoft.com/en-us/iis/media/on-demand-smooth-streaming/exploring-bit-rate-changes
             double rateMinus, ratePlus;
             if (downloadingSegment.Rate == VideoRate.FindMaxRateWhere(_ => true))
                 ratePlus = VideoRate.FindMaxRateWhere(_ => true);
