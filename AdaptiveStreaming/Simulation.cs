@@ -115,20 +115,22 @@ namespace AdaptiveStreaming
             //http://yuba.stanford.edu/~nickm/papers/sigcomm2014-video.pdf
             //https://docs.microsoft.com/en-us/iis/media/on-demand-smooth-streaming/exploring-bit-rate-changes
             double rateMinus, ratePlus;
-            if (downloadingSegment.Rate == VideoRate.FindMaxRateWhere(_ => true))
-                ratePlus = VideoRate.FindMaxRateWhere(_ => true);
+            double maxRate = VideoRate.FindMaxRateWhere(_ => true);
+            double minRate = VideoRate.FindMinRateWhere(_ => true);
+            if (downloadingSegment.Rate == maxRate)
+                ratePlus = maxRate;
             else
                 ratePlus = VideoRate.FindMinRateWhere(x => x > downloadingSegment.Rate);
 
-            if (downloadingSegment.Rate == VideoRate.FindMinRateWhere(_ => true))
-                rateMinus = VideoRate.FindMinRateWhere(_ => true);
+            if (downloadingSegment.Rate == minRate)
+                rateMinus = minRate;
             else
                 rateMinus = VideoRate.FindMaxRateWhere(x => x < downloadingSegment.Rate);
 
             if (genericPlayer.GenericBuffer.Occupancy <= Buffer.reservoir)
-                return VideoRate.FindMinRateWhere(_ => true);
+                return minRate;
             else if (genericPlayer.GenericBuffer.Occupancy >= (Buffer.reservoir + Buffer.cushion))
-                return VideoRate.FindMaxRateWhere(_ => true);
+                return maxRate;
             else if (DecodeRateMap(genericPlayer.GenericBuffer.Occupancy) >= ratePlus)
                 return VideoRate.FindMaxRateWhere(x => x < DecodeRateMap(genericPlayer.GenericBuffer.Occupancy));
             else if (DecodeRateMap(genericPlayer.GenericBuffer.Occupancy) <= rateMinus)
